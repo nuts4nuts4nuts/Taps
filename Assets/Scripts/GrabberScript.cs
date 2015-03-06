@@ -4,10 +4,13 @@ using System.Collections;
 public class GrabberScript : MonoBehaviour
 {
     CharacterControllerScript cs;
+    ParticleSystem pSystem;
 
     void Awake()
     {
         cs = GetComponentInParent<CharacterControllerScript>();
+        pSystem = GetComponentInChildren<ParticleSystem>();
+        pSystem.renderer.sortingLayerName = "Foreground";
     }
 
     void OnTriggerEnter2D(Collider2D collider)
@@ -30,5 +33,26 @@ public class GrabberScript : MonoBehaviour
         }
     }
 
+    public void SetAngle(float angle)
+    {
+        print(angle);
+        Quaternion newRotation = gameObject.transform.rotation;
+        Vector3 eulerRotation = newRotation.eulerAngles;
 
+        if(Mathf.Abs(angle) > 90)
+        {
+            //Account for y rotation of character
+            angle = 180 - angle;
+        }
+
+        eulerRotation.z = angle;
+
+        newRotation = Quaternion.Euler(eulerRotation);
+        gameObject.transform.rotation = newRotation;
+    }
+
+    public void PlayParticles()
+    {
+        pSystem.Emit(500);
+    }
 }

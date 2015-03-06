@@ -15,6 +15,9 @@ public class CharacterControllerScript : MonoBehaviour
     public LayerMask whatIsGround;
 
     private Animator anim;
+    private GrabberScript grabber;
+    public float grabCooldown = 0.1f;
+    private bool onCooldown = false;
 
     [HideInInspector]
     public BallScript ball;
@@ -37,63 +40,7 @@ public class CharacterControllerScript : MonoBehaviour
         physLayer = (int)me + 8;
         gameObject.layer = physLayer;
         characterSFX = GetComponent<AudioSource>();
-    }
-
-	void Update()
-    {
-        if (grounded && controller.Action1.WasPressed)
-        {
-            anim.SetBool("Ground", false);
-            rigidbody2D.AddForce(new Vector2(0, jumpForce));
-        }
-
-        if(ball)
-        {
-            ball.transform.localScale = new Vector3(-0.5f, 0.5f, 0.5f);
-            if(ball.whoHolds == me)
-            {
-                Vector2 ballPos = transform.position;
-                ballPos.y += 0.75f;
-                ball.rigidbody2D.transform.position = ballPos;
-
-                if(controller.Action3.WasReleased)
-                {
-                    ball.whoHolds = Players.Invalid;
-
-                    float x = controller.LeftStickX;
-                    float y = controller.LeftStickY;
-                    ball.transform.parent = null;
-                    ball.rigidbody2D.velocity = new Vector2(x * throwStrength * ball.chargeFactor, y * throwStrength * ball.chargeFactor);
-                    ball.collider2D.enabled = true;
-                    ball.chargeFactor = 1;
-                    characterSFX.clip = clipList[1];
-                    characterSFX.Play();
-                }
-                else if(controller.Action3.IsPressed)
-                {
-                    ball.chargeFactor += Time.deltaTime;
-                }
-
-                if(grounded)
-                {
-                    TakeDamage(ball.numBounces);
-                }
-            }
-            else if(controller.Action3.WasPressed && ball.whoHolds == Players.Invalid)
-            {
-                ball.whoHolds = me;
-
-                ball.transform.parent = transform;
-                ball.rigidbody2D.velocity = Vector2.zero;
-                ball.collider2D.enabled = false;
-                ball.IgnorePhysics(physLayer);
-                characterSFX.clip = clipList[0];
-                characterSFX.Play();
-
-                Time.timeScale = 0.1f;
-                Invoke("ResetTimeScale", 0.01f);
-            }
-        }
+        grabber = GetComponentInChildren<GrabberScript>();
     }
 
 	void FixedUpdate()
@@ -118,6 +65,80 @@ public class CharacterControllerScript : MonoBehaviour
         }
 	}
 
+	void Update()
+    {
+        if (grounded && controller.Action1.WasPressed)
+        {
+            anim.SetBool("Ground", false);
+            rigidbody2D.AddForce(new Vector2(0, jumpForce));
+        }
+
+        if (ball)
+        {
+            ball.transform.localScale = new Vector3(-0.5f, 0.5f, 0.5f);
+            if (ball.whoHolds == me)
+            {
+                Vector2 ballPos = transform.position;
+                ballPos.y += 0.75f;
+                ball.rigidbody2D.transform.position = ballPos;
+
+                if (controller.Action3.WasReleased)
+                {
+                    ball.whoHolds = Players.Invalid;
+
+                    float x = controller.LeftStickX;
+                    float y = controller.LeftStickY;
+                    ball.transform.parent = null;
+                    ball.rigidbody2D.velocity = new Vector2(x * throwStrength * ball.chargeFactor, y * throwStrength * ball.chargeFactor);
+                    ball.collider2D.enabled = true;
+                    ball.chargeFactor = 1;
+                    characterSFX.clip = clipList[1];
+                    characterSFX.Play();
+                }
+                else if (controller.Action3.IsPressed)
+                {
+                    ball.chargeFactor += Time.deltaTime;
+                }
+
+                if (grounded)
+                {
+                    TakeDamage(ball.numBounces);
+                }
+            }
+        }
+
+        if(controller.Action3.WasPressed && !onCooldown)
+        {
+            grabber.PlayParticles();
+
+            if (ball && ball.whoHolds == Players.Invalid)
+            {
+                ball.whoHolds = me;
+
+                ball.transform.parent = transform;
+                ball.rigidbody2D.velocity = Vector2.zero;
+                ball.collider2D.enabled = false;
+                ball.IgnorePhysics(physLayer);
+                characterSFX.clip = clipList[0];
+                characterSFX.Play();
+
+                Time.timeScale = 0.1f;
+                Invoke("ResetTimeScale", 0.01f);
+            }
+
+            onCooldown = true;
+            Invoke("ResetCooldown", grabCooldown);
+        }
+
+    }
+
+    void LateUpdate()
+    {
+        float x = controller.LeftStickX;
+        float y = controller.LeftStickY;
+        grabber.SetAngle(Mathf.Rad2Deg * Mathf.Atan2(y, x));
+    }
+
     void UpdateHealth(int newHealth)
     {
         health = newHealth;
@@ -138,9 +159,16 @@ public class CharacterControllerScript : MonoBehaviour
     void Flip()
     {
         facingRight = !facingRight;
-        Vector3 playerScale = transform.localScale;
-        playerScale.x *= -1;
-        transform.localScale = playerScale;
+        Vector3 eulerRotation = transform.rotation.eulerAngles;
+        if(eulerRotation.y == 180)
+        {
+            eulerRotation.y = 0;
+        }
+        else
+        {
+            eulerRotation.y = 180;
+        }
+        transform.Rotate(eulerRotation);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -156,5 +184,10 @@ public class CharacterControllerScript : MonoBehaviour
     private void ResetTimeScale()
     {
         Time.timeScale = 1.0f;
+    }
+
+    private void ResetCooldown()
+    {
+        onCooldown = false;
     }
 }

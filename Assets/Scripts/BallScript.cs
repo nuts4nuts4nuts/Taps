@@ -15,6 +15,7 @@ public class BallScript : MonoBehaviour
     public float chargeFactor = 1;
     [HideInInspector]
     public int physicsIgnoreLayer = 31;
+    public float throwStrength = 10.0f;
 
     private AudioSource ballSFX;
     public List<AudioClip> clipList;
@@ -28,8 +29,12 @@ public class BallScript : MonoBehaviour
     private float currentBallTime = START_BALL_TIME;
     private float ballTimeDelta = 1;
 
+    private ParticleSystem pSystem;
+
     void Awake()
     {
+        pSystem = GetComponentInChildren<ParticleSystem>();
+        pSystem.renderer.sortingLayerName = "Foreground";
         ballSFX = GetComponent<AudioSource>();
     }
 
@@ -83,6 +88,7 @@ public class BallScript : MonoBehaviour
         physicsIgnoreLayer = layer;
         int layerToPlayer = layer - 8;
         renderer.material.color = GameManager.instance.charPanels[layerToPlayer].color;
+        SetParticleColor(renderer.material.color);
 
         Physics2D.IgnoreLayerCollision(12, layer, yOrN);
     }
@@ -95,6 +101,15 @@ public class BallScript : MonoBehaviour
         }
 
         renderer.material.color = Color.white;
+    }
+
+    public void SetParticleColor(Color color)
+    {
+        Color newColor = pSystem.startColor;
+        newColor.r = color.r;
+        newColor.g = color.g;
+        newColor.b = color.b;
+        pSystem.startColor = newColor;
     }
 
     private void CountdownBallTimer()
