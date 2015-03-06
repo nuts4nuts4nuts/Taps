@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public class BallScript : MonoBehaviour
 {
     public float maxSpeed = 40.0f;
+    private Vector2 startPos;
 
     [HideInInspector]
     public Players whoHolds = Players.Invalid;
@@ -40,6 +41,7 @@ public class BallScript : MonoBehaviour
 
     void Start()
     {
+        startPos = transform.position;
         Reset();
     }
 
@@ -59,7 +61,10 @@ public class BallScript : MonoBehaviour
             ballSFX.Play();
             GameManager.instance.UpdateBallText(numBounces.ToString());
 
+            float oldSpeed = pSystem.startSpeed;
+            pSystem.startSpeed = 2;
             pSystem.Emit(500); //TODO? Make less janky
+            pSystem.startSpeed = oldSpeed;
             pSystem.Play();
         }
     }
@@ -67,7 +72,7 @@ public class BallScript : MonoBehaviour
     public void Reset()
     {
         transform.parent = null;
-        transform.position = Vector2.zero;
+        transform.position = startPos;
         rigidbody2D.velocity = Vector2.zero;
         whoHolds = Players.Invalid;
         chargeFactor = 1;
