@@ -9,10 +9,17 @@ public class CharacterControllerScript : MonoBehaviour
     public float jumpForce = 1000f;
     private bool facingRight = true;
 
-    private bool grounded = false;
     public Transform groundCheck;
     private float groundRadius = 0.2f;
     public LayerMask whatIsGround;
+    private bool grounded = false;
+
+    public Transform wallCheck;
+    private float wallRadius = 0.1f;
+    public LayerMask whatIsWall;
+    private bool canWallJump = false;
+    private Vector2 wallJumpVelocity;
+    private bool canWalk = true;
 
     private Animator anim;
     private GrabberScript grabber;
@@ -33,6 +40,7 @@ public class CharacterControllerScript : MonoBehaviour
 
     [HideInInspector]
     public InputDevice controller;
+    public Color color;
 
     void Start()
     {
@@ -41,11 +49,14 @@ public class CharacterControllerScript : MonoBehaviour
         gameObject.layer = physLayer;
         characterSFX = GetComponent<AudioSource>();
         grabber = GetComponentInChildren<GrabberScript>();
+
+        wallJumpVelocity = new Vector2(maxSpeed, 15);
     }
 
 	void FixedUpdate()
     {
         grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround);
+        canWallJump = Physics2D.OverlapCircle(wallCheck.position, wallRadius, whatIsWall);
         anim.SetBool("Ground", grounded);
         anim.SetFloat("vSpeed", rigidbody2D.velocity.y);
 
@@ -53,13 +64,16 @@ public class CharacterControllerScript : MonoBehaviour
 
         anim.SetFloat("Speed", Mathf.Abs(movement));
 
-        rigidbody2D.velocity = new Vector2(movement * maxSpeed, rigidbody2D.velocity.y);
+        if(canWalk)
+        {
+            rigidbody2D.velocity = new Vector2(movement * maxSpeed, rigidbody2D.velocity.y);
+        }
 
-        if(movement > 0 && !facingRight)
+        if(rigidbody2D.velocity.x > 0 && !facingRight)
         {
             Flip();
         }
-        else if(movement < 0 && facingRight)
+        else if(rigidbody2D.velocity.x < 0 && facingRight)
         {
             Flip();
         }
@@ -71,6 +85,21 @@ public class CharacterControllerScript : MonoBehaviour
         {
             anim.SetBool("Ground", false);
             rigidbody2D.AddForce(new Vector2(0, jumpForce));
+        }
+        else if (canWallJump && controller.Action1.WasPressed)
+        {
+            anim.SetBool("Ground", false);
+            Vector3 jumpVelocity = wallJumpVelocity;
+            canWalk = false;
+
+            if(facingRight)
+            {
+                jumpVelocity.x *= -1;
+            }
+
+            rigidbody2D.velocity = jumpVelocity;
+
+            Invoke("ResetCanWalk", 0.12f);
         }
 
         if (ball)
@@ -129,7 +158,6 @@ public class CharacterControllerScript : MonoBehaviour
             onCooldown = true;
             Invoke("ResetCooldown", grabCooldown);
         }
-
     }
 
     void LateUpdate()
@@ -189,5 +217,10 @@ public class CharacterControllerScript : MonoBehaviour
     private void ResetCooldown()
     {
         onCooldown = false;
+    }
+
+    private void ResetCanWalk()
+    {
+        canWalk = true;
     }
 }

@@ -54,6 +54,9 @@ public class GameManager : MonoBehaviour
                 cs.controller = controllerData.controllers[i].device;
                 cs.me = (Players)i;
                 cs.transform.position = new Vector3(1 + movementIter * 2, 1.75f, 0);
+                Color charColor = charPanels[i].color;
+                charColor.a = 0.2f;
+                cs.color = charColor;
                 chars[i] = cs;
                 movementIter++;
 

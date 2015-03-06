@@ -58,6 +58,9 @@ public class BallScript : MonoBehaviour
             ballSFX.clip = clipList[0];
             ballSFX.Play();
             GameManager.instance.UpdateBallText(numBounces.ToString());
+
+            pSystem.Emit(500); //TODO? Make less janky
+            pSystem.Play();
         }
     }
 

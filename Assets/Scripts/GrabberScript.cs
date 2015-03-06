@@ -13,6 +13,11 @@ public class GrabberScript : MonoBehaviour
         pSystem.renderer.sortingLayerName = "Foreground";
     }
 
+    void Start()
+    {
+        pSystem.startColor = cs.color;
+    }
+
     void OnTriggerEnter2D(Collider2D collider)
     {
         BallScript bs = collider.gameObject.GetComponent<BallScript>();
