@@ -37,6 +37,7 @@ public class CharacterControllerScript : MonoBehaviour
     //Audio
     private AudioSource characterSFX;
     public List<AudioClip> clipList;
+    private DamageHelper damageHelper;
 
     [HideInInspector]
     public InputDevice controller;
@@ -49,6 +50,7 @@ public class CharacterControllerScript : MonoBehaviour
         gameObject.layer = physLayer;
         characterSFX = GetComponent<AudioSource>();
         grabber = GetComponentInChildren<GrabberScript>();
+        damageHelper = GameObject.Find("DamageEffect").GetComponent<DamageHelper>();
 
         wallJumpVelocity = new Vector2(maxSpeed, 15);
     }
@@ -81,27 +83,6 @@ public class CharacterControllerScript : MonoBehaviour
 
 	void Update()
     {
-        if (grounded && controller.Action1.WasPressed)
-        {
-            anim.SetBool("Ground", false);
-            rigidbody2D.AddForce(new Vector2(0, jumpForce));
-        }
-        else if (canWallJump && controller.Action1.WasPressed)
-        {
-            anim.SetBool("Ground", false);
-            Vector3 jumpVelocity = wallJumpVelocity;
-            canWalk = false;
-
-            if(facingRight)
-            {
-                jumpVelocity.x *= -1;
-            }
-
-            rigidbody2D.velocity = jumpVelocity;
-
-            Invoke("ResetCanWalk", 0.12f);
-        }
-
         if (ball)
         {
             ball.transform.localScale = new Vector3(-0.5f, 0.5f, 0.5f);
@@ -158,6 +139,27 @@ public class CharacterControllerScript : MonoBehaviour
             onCooldown = true;
             Invoke("ResetCooldown", grabCooldown);
         }
+
+        if (grounded && controller.Action1.WasPressed)
+        {
+            anim.SetBool("Ground", false);
+            rigidbody2D.AddForce(new Vector2(0, jumpForce));
+        }
+        else if (canWallJump && controller.Action1.WasPressed)
+        {
+            anim.SetBool("Ground", false);
+            Vector3 jumpVelocity = wallJumpVelocity;
+            canWalk = false;
+
+            if(facingRight)
+            {
+                jumpVelocity.x *= -1;
+            }
+
+            rigidbody2D.velocity = jumpVelocity;
+
+            Invoke("ResetCanWalk", 0.12f);
+        }
     }
 
     void LateUpdate()
@@ -181,7 +183,15 @@ public class CharacterControllerScript : MonoBehaviour
         ball.Reset();
         ball = null;
         if (health <= 0)
+        {
+            damageHelper.PlaySound();
+            damageHelper.BurstParticles((int)DamageHelper.ParticleAmount.death, color, transform.position);
             Destroy(gameObject);
+        }
+        else
+        {
+            damageHelper.BurstParticles(damage * 5, color, transform.position);
+        }
     }
 
     void Flip()
