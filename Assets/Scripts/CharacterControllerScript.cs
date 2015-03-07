@@ -41,6 +41,7 @@ public class CharacterControllerScript : MonoBehaviour
 
     [HideInInspector]
     public InputDevice controller;
+    private InputControl controlScheme;
     public Color color;
 
     void Start()
@@ -51,6 +52,7 @@ public class CharacterControllerScript : MonoBehaviour
         characterSFX = GetComponent<AudioSource>();
         grabber = GetComponentInChildren<GrabberScript>();
         damageHelper = GameObject.Find("DamageEffect").GetComponent<DamageHelper>();
+        controlScheme = controller.Action1;
 
         wallJumpVelocity = new Vector2(maxSpeed, 15);
     }
@@ -92,7 +94,7 @@ public class CharacterControllerScript : MonoBehaviour
                 ballPos.y += 0.75f;
                 ball.rigidbody2D.transform.position = ballPos;
 
-                if (controller.Action3.WasReleased)
+                if (controlScheme.WasReleased)
                 {
                     ball.whoHolds = Players.Invalid;
 
@@ -105,7 +107,7 @@ public class CharacterControllerScript : MonoBehaviour
                     characterSFX.clip = clipList[1];
                     characterSFX.Play();
                 }
-                else if (controller.Action3.IsPressed)
+                else if (controlScheme.IsPressed)
                 {
                     ball.chargeFactor += Time.deltaTime;
                 }
@@ -115,29 +117,6 @@ public class CharacterControllerScript : MonoBehaviour
                     TakeDamage(ball.numBounces);
                 }
             }
-        }
-
-        if(controller.Action3.WasPressed && !onCooldown)
-        {
-            grabber.PlayParticles();
-
-            if (ball && ball.whoHolds == Players.Invalid)
-            {
-                ball.whoHolds = me;
-
-                ball.transform.parent = transform;
-                ball.rigidbody2D.velocity = Vector2.zero;
-                ball.collider2D.enabled = false;
-                ball.IgnorePhysics(physLayer);
-                characterSFX.clip = clipList[0];
-                characterSFX.Play();
-
-                Time.timeScale = 0.1f;
-                Invoke("ResetTimeScale", 0.01f);
-            }
-
-            onCooldown = true;
-            Invoke("ResetCooldown", grabCooldown);
         }
 
         if (grounded && controller.Action1.WasPressed)
@@ -159,6 +138,28 @@ public class CharacterControllerScript : MonoBehaviour
             rigidbody2D.velocity = jumpVelocity;
 
             Invoke("ResetCanWalk", 0.12f);
+        }
+        else if(controlScheme.WasPressed && !onCooldown)
+        {
+            grabber.PlayParticles();
+
+            if (ball && ball.whoHolds == Players.Invalid)
+            {
+                ball.whoHolds = me;
+
+                ball.transform.parent = transform;
+                ball.rigidbody2D.velocity = Vector2.zero;
+                ball.collider2D.enabled = false;
+                ball.IgnorePhysics(physLayer);
+                characterSFX.clip = clipList[0];
+                characterSFX.Play();
+
+                Time.timeScale = 0.1f;
+                Invoke("ResetTimeScale", 0.01f);
+            }
+
+            onCooldown = true;
+            Invoke("ResetCooldown", grabCooldown);
         }
     }
 

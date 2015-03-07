@@ -30,12 +30,20 @@ public class BallScript : MonoBehaviour
     private float currentBallTime = START_BALL_TIME;
     private float ballTimeDelta = 1;
 
-    private ParticleSystem pSystem;
+    private int orbitParticleCoefficient = 50;
+    private int trailParticleCoefficient = 15;
+
+    private ParticleSystem[] pSystems;
 
     void Awake()
     {
-        pSystem = GetComponentInChildren<ParticleSystem>();
-        pSystem.renderer.sortingLayerName = "Foreground";
+        pSystems = GetComponentsInChildren<ParticleSystem>();
+
+        foreach(ParticleSystem system in pSystems)
+        {
+            system.renderer.sortingLayerName = "Foreground";
+        }
+
         ballSFX = GetComponent<AudioSource>();
     }
 
@@ -52,6 +60,14 @@ public class BallScript : MonoBehaviour
 
     }
 
+    void Update()
+    {
+        int trailParticleNum = (int)rigidbody2D.velocity.magnitude * trailParticleCoefficient;
+        int orbitParticleNum = (int)rigidbody2D.velocity.magnitude * orbitParticleCoefficient;
+        pSystems[0].emissionRate = trailParticleNum;
+        pSystems[1].emissionRate = orbitParticleNum;
+    }
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         if(collision.gameObject.tag == "wall")
@@ -61,11 +77,12 @@ public class BallScript : MonoBehaviour
             ballSFX.Play();
             GameManager.instance.UpdateBallText(numBounces.ToString());
 
-            float oldSpeed = pSystem.startSpeed;
-            pSystem.startSpeed = 2;
-            pSystem.Emit(500); //TODO? Make less janky
-            pSystem.startSpeed = oldSpeed;
-            pSystem.Play();
+            float oldSpeed = pSystems[0].startSpeed;
+            pSystems[0].startSpeed = 2;
+            int particleAmount = 30 * (int)rigidbody2D.velocity.magnitude;
+            pSystems[0].Emit(particleAmount); //TODO? Make less janky
+            pSystems[0].startSpeed = oldSpeed;
+            pSystems[0].Play();
         }
     }
 
@@ -113,11 +130,14 @@ public class BallScript : MonoBehaviour
 
     public void SetParticleColor(Color color)
     {
-        Color newColor = pSystem.startColor;
+        Color newColor = pSystems[0].startColor;
         newColor.r = color.r;
         newColor.g = color.g;
         newColor.b = color.b;
-        pSystem.startColor = newColor;
+        foreach(ParticleSystem system in pSystems)
+        {
+            system.startColor = newColor;
+        }
     }
 
     private void CountdownBallTimer()
