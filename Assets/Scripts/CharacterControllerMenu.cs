@@ -11,27 +11,50 @@ public class CharacterControllerMenu : Menu
     public override void Work()
     {
         int numDevices = InputManager.Devices.Count;
+        bool play = false;
 
         for(int i = 0; i < numDevices; ++i)
         {
             InputDevice device = InputManager.Devices[i];
 
-            if(device.Action1.WasPressed)
+            int index = controllerData.Contains(device);
+            if(device.Action1.WasPressed && index == -1)
             {
-                int index = controllerData.Contains(device);
-                if(index != -1)
-                {
-                    controllerData.controllers[index].ready = !controllerData.controllers[index].ready;
-                }
-                else
-                {
-                    controllerData.Add(device);
-                }
+                controllerData.Add(device);
+                index = controllerData.Contains(device);
+                controllerData.controllers[index].ready = true;
+            }
+            else if(device.Action4.WasPressed)
+            {
+                play = true;
             }
 
             if(device.Action2.WasPressed)
             {
                 controllerData.Remove(device);
+            }
+
+            float x = device.LeftStickX;
+
+            if(index != -1)
+            {
+                bool movedStick = controllerData.controllers[index].justMovedLeftStick;
+                if(x >= 0.5f && !movedStick)
+                {
+                    Color currentColor = controllerData.controllers[index].color;
+                    controllerData.controllers[index].color = controllerData.GetNextValidColor(currentColor);
+                    controllerData.controllers[index].justMovedLeftStick = true;
+                }
+                else if(x <= -0.5f && !movedStick)
+                {
+                    Color currentColor = controllerData.controllers[index].color;
+                    controllerData.controllers[index].color = controllerData.GetPrevValidColor(currentColor);
+                    controllerData.controllers[index].justMovedLeftStick = true;
+                }
+                else if(x < 0.5f && x > -0.5f)
+                {
+                    controllerData.controllers[index].justMovedLeftStick = false;
+                }
             }
         }
 
@@ -48,18 +71,13 @@ public class CharacterControllerMenu : Menu
 
             if (controllerData.controllers[i].device != null)
             {
-                startSpheres[i].renderer.material.color = Color.green;
-
-                if(controllerData.controllers[i].ready)
-                {
-                    startSpheres[i].renderer.material.color = Color.yellow;
-                }
+                startSpheres[i].renderer.material.color = controllerData.controllers[i].color;
             }
         }
 
-        if(controllerData.ReadyCount() == controllerData.Count() && controllerData.ReadyCount() > 0)
+        if(play && controllerData.ReadyCount() == controllerData.Count() && controllerData.ReadyCount() > 0)
         {
-            Application.LoadLevel("Game");
+            Application.LoadLevel("Game2");
         }
     }
 }

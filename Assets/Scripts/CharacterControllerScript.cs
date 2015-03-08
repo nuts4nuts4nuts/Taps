@@ -44,6 +44,8 @@ public class CharacterControllerScript : MonoBehaviour
     private InputControl controlScheme;
     public Color color;
 
+    ShakyCam cam;
+
     void Start()
     {
         anim = (Animator)GetComponentInChildren(typeof(Animator));
@@ -53,6 +55,8 @@ public class CharacterControllerScript : MonoBehaviour
         grabber = GetComponentInChildren<GrabberScript>();
         damageHelper = GameObject.Find("DamageEffect").GetComponent<DamageHelper>();
         controlScheme = controller.Action1;
+
+        cam = Camera.main.GetComponent<ShakyCam>();
 
         wallJumpVelocity = new Vector2(maxSpeed, 15);
     }
@@ -96,6 +100,7 @@ public class CharacterControllerScript : MonoBehaviour
 
                 if (controlScheme.WasReleased)
                 {
+                    //Release
                     ball.whoHolds = Players.Invalid;
 
                     float x = controller.LeftStickX;
@@ -104,11 +109,13 @@ public class CharacterControllerScript : MonoBehaviour
                     ball.rigidbody2D.velocity = new Vector2(x * throwStrength * ball.chargeFactor, y * throwStrength * ball.chargeFactor);
                     ball.collider2D.enabled = true;
                     ball.chargeFactor = 1;
+                    ball.UpdateSpeed();
                     characterSFX.clip = clipList[1];
                     characterSFX.Play();
                 }
                 else if (controlScheme.IsPressed)
                 {
+                    //Charge
                     ball.chargeFactor += Time.deltaTime;
                 }
 
@@ -145,6 +152,7 @@ public class CharacterControllerScript : MonoBehaviour
 
             if (ball && ball.whoHolds == Players.Invalid)
             {
+                //Catch
                 ball.whoHolds = me;
 
                 ball.transform.parent = transform;
@@ -154,8 +162,7 @@ public class CharacterControllerScript : MonoBehaviour
                 characterSFX.clip = clipList[0];
                 characterSFX.Play();
 
-                Time.timeScale = 0.1f;
-                Invoke("ResetTimeScale", 0.01f);
+                cam.Sleep(0.1f, 0.1f);
             }
 
             onCooldown = true;
@@ -183,15 +190,23 @@ public class CharacterControllerScript : MonoBehaviour
         UpdateHealth(health - damage);
         ball.Reset();
         ball = null;
+
+        Vector2 particlePos = transform.position;
+        particlePos.y -= 0.5f;
+
         if (health <= 0)
         {
             damageHelper.PlaySound();
-            damageHelper.BurstParticles((int)DamageHelper.ParticleAmount.death, color, transform.position);
+            damageHelper.BurstParticles((int)DamageHelper.ParticleAmount.death, color, particlePos);
+            cam.Shake(0.001f * 100, 0.00001f * 100);
+            cam.Sleep(0.1f, 0.5f);
             Destroy(gameObject);
         }
         else
         {
-            damageHelper.BurstParticles(damage * 5, color, transform.position);
+            damageHelper.BurstParticles(damage * 5, color, particlePos);
+            cam.Shake(0.001f * damage, 0.00003f * damage);
+            cam.Sleep(0.01f, 0.002f * damage);
         }
     }
 
@@ -218,11 +233,6 @@ public class CharacterControllerScript : MonoBehaviour
         {
             TakeDamage(ball.numBounces);
         }
-    }
-
-    private void ResetTimeScale()
-    {
-        Time.timeScale = 1.0f;
     }
 
     private void ResetCooldown()

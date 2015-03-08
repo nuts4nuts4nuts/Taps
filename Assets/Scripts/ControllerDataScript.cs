@@ -4,10 +4,14 @@ using InControl;
 
 public class ControllerDataScript : MonoBehaviour
 {
+    private Color[] colors;
+
     public struct ControllerInfo
     {
         public InputDevice device;
         public bool ready;
+        public Color color;
+        public bool justMovedLeftStick;
     }
 
     [HideInInspector]
@@ -20,6 +24,11 @@ public class ControllerDataScript : MonoBehaviour
         DontDestroyOnLoad(this);
 
         controllers = new ControllerInfo[MAX_CONTROLLERS];
+        colors = new Color[4];
+        colors[0] = Color.red;
+        colors[1] = Color.blue;
+        colors[2] = Color.green;
+        colors[3] = Color.yellow;
     }
 
     public int Contains(InputDevice device)
@@ -40,6 +49,8 @@ public class ControllerDataScript : MonoBehaviour
         ControllerInfo newInfo = new ControllerInfo();
         newInfo.device = device;
         newInfo.ready = false;
+        newInfo.color = GetNextValidColor(Color.yellow);
+        newInfo.justMovedLeftStick = false;
 
         int index = FirstOpenIndex();
         if(index != -1)
@@ -98,5 +109,103 @@ public class ControllerDataScript : MonoBehaviour
         }
 
         return -1;
+    }
+
+    public Color GetNextValidColor(Color color)
+    {
+        Color newColor = color;
+        int colorIndex = 0; 
+        bool colorFound = false;
+
+        //Get index of color
+        for(; !colorFound; ++colorIndex)
+        {
+            if(colors[colorIndex] == color)
+            {
+                colorFound = true;
+            }
+        }
+        //colorIndex gets iterated on the way out
+        colorIndex--;
+
+        //Assign new color
+        bool colorIsUsed = true;
+        int i = (colorIndex + 1) % colors.Length;
+
+        while(i != colorIndex && colorIsUsed)
+        {
+            //Check is color is used
+            colorIsUsed = false;
+            for(int j = 0; j < controllers.Length; ++j)
+            {
+                if(controllers[j].color == colors[i])
+                {
+                    colorIsUsed = true;
+                }
+            }
+
+            if(!colorIsUsed)
+            {
+                newColor = colors[i];
+            }
+
+            i = (i + 1) % colors.Length;
+        }
+
+        return newColor;
+    }
+
+    public Color GetPrevValidColor(Color color)
+    {
+        Color newColor = color;
+        int colorIndex = 0; 
+        bool colorFound = false;
+
+        //Get index of color
+        for(; !colorFound; ++colorIndex)
+        {
+            if(colors[colorIndex] == color)
+            {
+                colorFound = true;
+            }
+        }
+        //colorIndex gets iterated on the way out
+        colorIndex--;
+
+        //Assign new color
+        bool colorIsUsed = true;
+        int i = colorIndex - 1;
+        //Wrap it around
+        if(i < 0)
+        {
+            i = colors.Length - 1;
+        }
+
+        while(i != colorIndex && colorIsUsed)
+        {
+            //Check is color is used
+            colorIsUsed = false;
+            for(int j = 0; j < controllers.Length; ++j)
+            {
+                if(controllers[j].color == colors[i])
+                {
+                    colorIsUsed = true;
+                }
+            }
+
+            if(!colorIsUsed)
+            {
+                newColor = colors[i];
+            }
+
+            i = i - 1;
+            //Wrap it around
+            if(i < 0)
+            {
+                i = colors.Length - 1;
+            }
+        }
+
+        return newColor;
     }
 }

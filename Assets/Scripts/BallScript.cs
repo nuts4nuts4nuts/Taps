@@ -5,7 +5,10 @@ using System.Collections.Generic;
 
 public class BallScript : MonoBehaviour
 {
+    public float startSpeed = 9f;
     public float maxSpeed = 40.0f;
+    private float currentSpeed = 7.5f;
+    public float speedCoefficient = 1.2f;
     private Vector2 startPos;
 
     [HideInInspector]
@@ -34,6 +37,8 @@ public class BallScript : MonoBehaviour
     private int trailParticleCoefficient = 15;
 
     private ParticleSystem[] pSystems;
+    public Color trailParticleColor;
+    public Color orbitParticleColor;
 
     void Awake()
     {
@@ -56,7 +61,7 @@ public class BallScript : MonoBehaviour
     void FixedUpdate()
     {
         if(whoHolds == Players.Invalid)
-            rigidbody2D.velocity = Vector2.ClampMagnitude(rigidbody2D.velocity, maxSpeed);
+            rigidbody2D.velocity = Vector2.ClampMagnitude(rigidbody2D.velocity, currentSpeed);
 
     }
 
@@ -66,6 +71,16 @@ public class BallScript : MonoBehaviour
         int orbitParticleNum = (int)rigidbody2D.velocity.magnitude * orbitParticleCoefficient;
         pSystems[0].emissionRate = trailParticleNum;
         pSystems[1].emissionRate = orbitParticleNum;
+
+        ParticleSystem.Particle[] pList = new ParticleSystem.Particle[pSystems[0].particleCount];
+        pSystems[0].GetParticles(pList);
+        for (int i = 0; i < pList.Length; ++i)
+        {
+            float lifePercentage = (pList[i].lifetime / pList[i].startLifetime);
+            pList[i].color = Color.Lerp(trailParticleColor, orbitParticleColor, lifePercentage);
+        }
+
+        pSystems[0].SetParticles(pList, pSystems[0].particleCount);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -100,6 +115,7 @@ public class BallScript : MonoBehaviour
 
         rigidbody2D.gravityScale = 0.0f;
         collider2D.enabled = false;
+        currentSpeed = startSpeed;
         CountdownBallTimer();
     }
 
@@ -130,14 +146,17 @@ public class BallScript : MonoBehaviour
 
     public void SetParticleColor(Color color)
     {
-        Color newColor = pSystems[0].startColor;
-        newColor.r = color.r;
-        newColor.g = color.g;
-        newColor.b = color.b;
-        foreach(ParticleSystem system in pSystems)
-        {
-            system.startColor = newColor;
-        }
+        trailParticleColor = pSystems[0].startColor;
+        trailParticleColor.r = color.r;
+        trailParticleColor.g = color.g;
+        trailParticleColor.b = color.b;
+        pSystems[0].startColor = trailParticleColor;
+
+        orbitParticleColor = pSystems[1].startColor;
+        orbitParticleColor.r = 1 - color.r;
+        orbitParticleColor.g = 1 - color.g;
+        orbitParticleColor.b = 1 - color.b;
+        pSystems[1].startColor = orbitParticleColor;
     }
 
     private void CountdownBallTimer()
@@ -171,6 +190,16 @@ public class BallScript : MonoBehaviour
 
             ballSFX.clip = clipList[2];
             ballSFX.Play();
+        }
+    }
+
+    public void UpdateSpeed()
+    {
+        currentSpeed *= speedCoefficient;
+
+        if(currentSpeed >= maxSpeed)
+        {
+            currentSpeed = maxSpeed;
         }
     }
 }
