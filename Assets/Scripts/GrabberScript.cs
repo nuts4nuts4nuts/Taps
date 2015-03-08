@@ -40,7 +40,6 @@ public class GrabberScript : MonoBehaviour
 
     public void SetAngle(float angle)
     {
-        print(angle);
         Quaternion newRotation = gameObject.transform.rotation;
         Vector3 eulerRotation = newRotation.eulerAngles;
 

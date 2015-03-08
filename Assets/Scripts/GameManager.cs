@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
     private void CreatePlayers()
     {
         int movementIter = 0;
+        List<CharacterControllerScript> charsToSetTeam = new List<CharacterControllerScript>();
         for(int i = 0; i < ControllerDataScript.MAX_CONTROLLERS; ++i)
         {
             if(controllerData.controllers[i].device != null)
@@ -52,7 +53,7 @@ public class GameManager : MonoBehaviour
                 GameObject character = (GameObject)Instantiate(Resources.Load("Prefabs/Character"));
                 CharacterControllerScript cs = character.GetComponent<CharacterControllerScript>();
                 cs.controller = controllerData.controllers[i].device;
-                cs.me = (Players)i;
+                cs.SetMe((Players)i);
                 cs.transform.position = new Vector3(1 + movementIter * 2, 1.75f, 0);
                 
                 //Color
@@ -68,6 +69,7 @@ public class GameManager : MonoBehaviour
                 Text text = charPanels[i].GetComponentInChildren<Text>();
                 charText[i] = text;
                 charText[i].text = "100";
+                charsToSetTeam.Add(cs);
             }
             else
             {
@@ -75,6 +77,28 @@ public class GameManager : MonoBehaviour
                 color.a = 0.0f;
                 charPanels[i].color = color;
             }
+        }
+
+        if(controllerData.teams)
+        {
+            SetFriends(charsToSetTeam);
+        }
+    }
+
+    private void SetFriends(List<CharacterControllerScript> chars)
+    {
+        foreach (CharacterControllerScript character in chars)
+        {
+            List<int> friends = new List<int>();
+            foreach (CharacterControllerScript testChar in chars)
+            {
+                if(testChar.color == character.color)
+                {
+                    friends.Add(testChar.physLayer);
+                }
+            }
+
+            character.SetFriends(friends.ToArray());
         }
     }
 

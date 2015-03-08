@@ -18,6 +18,7 @@ public class ControllerDataScript : MonoBehaviour
     public ControllerInfo[] controllers;
     [HideInInspector]
     public const int MAX_CONTROLLERS = 4;
+    public bool teams = false;
 
     void Awake()
     {
@@ -25,10 +26,7 @@ public class ControllerDataScript : MonoBehaviour
 
         controllers = new ControllerInfo[MAX_CONTROLLERS];
         colors = new Color[4];
-        colors[0] = Color.red;
-        colors[1] = Color.blue;
-        colors[2] = Color.green;
-        colors[3] = Color.yellow;
+        colors = new Color[] { Color.red, Color.blue, Color.green, Color.yellow };
     }
 
     public int Contains(InputDevice device)
@@ -142,6 +140,11 @@ public class ControllerDataScript : MonoBehaviour
                 {
                     colorIsUsed = true;
                 }
+
+                if(teams)
+                {
+                    colorIsUsed = false;
+                }
             }
 
             if(!colorIsUsed)
@@ -190,6 +193,11 @@ public class ControllerDataScript : MonoBehaviour
                 if(controllers[j].color == colors[i])
                 {
                     colorIsUsed = true;
+                }
+
+                if(teams)
+                {
+                    colorIsUsed = false;
                 }
             }
 

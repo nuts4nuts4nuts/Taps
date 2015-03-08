@@ -32,7 +32,8 @@ public class CharacterControllerScript : MonoBehaviour
 
     private int health = 100;
     public Players me = Players.Invalid;
-    private int physLayer = 0;
+    [HideInInspector]
+    public int physLayer = 0;
 
     //Audio
     private AudioSource characterSFX;
@@ -44,12 +45,14 @@ public class CharacterControllerScript : MonoBehaviour
     private InputControl controlScheme;
     public Color color;
 
+    //Team stuff
+    int[] friends;
+
     ShakyCam cam;
 
     void Start()
     {
         anim = (Animator)GetComponentInChildren(typeof(Animator));
-        physLayer = (int)me + 8;
         gameObject.layer = physLayer;
         characterSFX = GetComponent<AudioSource>();
         grabber = GetComponentInChildren<GrabberScript>();
@@ -59,6 +62,17 @@ public class CharacterControllerScript : MonoBehaviour
         cam = Camera.main.GetComponent<ShakyCam>();
 
         wallJumpVelocity = new Vector2(maxSpeed, 15);
+    }
+
+    public void SetMe(Players i)
+    {
+        me = i;
+        physLayer = (int)me + 8;
+    }
+
+    public void SetFriends(int[] newFriends)
+    {
+        friends = newFriends;
     }
 
 	void FixedUpdate()
@@ -158,7 +172,17 @@ public class CharacterControllerScript : MonoBehaviour
                 ball.transform.parent = transform;
                 ball.rigidbody2D.velocity = Vector2.zero;
                 ball.collider2D.enabled = false;
-                ball.IgnorePhysics(physLayer);
+
+                ball.IgnorePhysics(friends[0]);
+
+                if(friends.Length > 1)
+                {
+                    for (int i = 1; i < friends.Length; ++i)
+                    {
+                        ball.IgnorePhysics(friends[i], true, false);
+                    }
+                }
+
                 characterSFX.clip = clipList[0];
                 characterSFX.Play();
 

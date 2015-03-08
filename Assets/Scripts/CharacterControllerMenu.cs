@@ -34,6 +34,11 @@ public class CharacterControllerMenu : Menu
                 controllerData.Remove(device);
             }
 
+            if(device.Action3.WasPressed)
+            {
+                controllerData.teams = !controllerData.teams;
+            }
+
             float x = device.LeftStickX;
 
             if(index != -1)
