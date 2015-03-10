@@ -79,10 +79,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if(controllerData.teams)
-        {
-            SetFriends(charsToSetTeam);
-        }
+        SetFriends(charsToSetTeam);
     }
 
     private void SetFriends(List<CharacterControllerScript> chars)

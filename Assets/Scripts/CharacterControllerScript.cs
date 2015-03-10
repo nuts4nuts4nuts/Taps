@@ -174,6 +174,7 @@ public class CharacterControllerScript : MonoBehaviour
                 ball.collider2D.enabled = false;
 
                 ball.IgnorePhysics(friends[0]);
+                ball.SetParticleColor(color);
 
                 if(friends.Length > 1)
                 {
@@ -212,6 +213,7 @@ public class CharacterControllerScript : MonoBehaviour
         characterSFX.clip = clipList[2];
         characterSFX.Play();
         UpdateHealth(health - damage);
+        ball.ExplodeParticles();
         ball.Reset();
         ball = null;
 

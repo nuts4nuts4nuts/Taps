@@ -39,6 +39,7 @@ public class BallScript : MonoBehaviour
     private ParticleSystem[] pSystems;
     public Color trailParticleColor;
     public Color orbitParticleColor;
+    public AnimationCurve colorCurve;
 
     void Awake()
     {
@@ -72,15 +73,46 @@ public class BallScript : MonoBehaviour
         pSystems[0].emissionRate = trailParticleNum;
         pSystems[1].emissionRate = orbitParticleNum;
 
+        //Color
         ParticleSystem.Particle[] pList = new ParticleSystem.Particle[pSystems[0].particleCount];
         pSystems[0].GetParticles(pList);
         for (int i = 0; i < pList.Length; ++i)
         {
             float lifePercentage = (pList[i].lifetime / pList[i].startLifetime);
-            pList[i].color = Color.Lerp(trailParticleColor, orbitParticleColor, lifePercentage);
+            float curvedPercentage = colorCurve.Evaluate(lifePercentage);
+            Color lerpedColor = Color.Lerp(trailParticleColor, orbitParticleColor, curvedPercentage);
+            pList[i].color = lerpedColor * 2; //CRANK IT
         }
 
         pSystems[0].SetParticles(pList, pSystems[0].particleCount);
+
+        ParticleSystem.Particle[] pListOrbit = new ParticleSystem.Particle[pSystems[1].particleCount];
+        pSystems[1].GetParticles(pListOrbit);
+        for (int i = 0; i < pListOrbit.Length; ++i)
+        {
+            float lifePercentage = (pListOrbit[i].lifetime / pListOrbit[i].startLifetime);
+            float curvedPercentage = colorCurve.Evaluate(lifePercentage);
+            Color lerpedColor = Color.Lerp(trailParticleColor, orbitParticleColor, curvedPercentage);
+            pListOrbit[i].color = lerpedColor * 4; //CRANK IT
+        }
+
+        pSystems[1].SetParticles(pListOrbit, pSystems[1].particleCount);
+    }
+
+    public void ExplodeParticles()
+    {
+        float oldSpeed = pSystems[0].startSpeed;
+        float oldLifetime = pSystems[0].startLifetime;
+        int particleAmount = 10 * numBounces;
+        float lifetimeBonus = particleAmount * 0.001f;
+
+        pSystems[0].startSpeed = 2;
+        pSystems[0].startLifetime = oldLifetime + lifetimeBonus;
+        pSystems[0].Emit(particleAmount); //TODO? Make less janky
+
+        pSystems[0].startSpeed = oldSpeed;
+        pSystems[0].startLifetime = oldLifetime;
+        pSystems[0].Play();
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -92,12 +124,7 @@ public class BallScript : MonoBehaviour
             ballSFX.Play();
             GameManager.instance.UpdateBallText(numBounces.ToString());
 
-            float oldSpeed = pSystems[0].startSpeed;
-            pSystems[0].startSpeed = 2;
-            int particleAmount = 30 * (int)rigidbody2D.velocity.magnitude;
-            pSystems[0].Emit(particleAmount); //TODO? Make less janky
-            pSystems[0].startSpeed = oldSpeed;
-            pSystems[0].Play();
+            ExplodeParticles();
         }
     }
 
@@ -129,7 +156,6 @@ public class BallScript : MonoBehaviour
         physicsIgnoreLayer = layer;
         int layerToPlayer = layer - 8;
         renderer.material.color = GameManager.instance.charPanels[layerToPlayer].color;
-        SetParticleColor(renderer.material.color);
 
         Physics2D.IgnoreLayerCollision(12, layer, yOrN);
     }
@@ -187,6 +213,7 @@ public class BallScript : MonoBehaviour
             collider2D.enabled = true;
             ballTime = RESET_BALL_TIME;
             currentBallTime = ballTime;
+            SetParticleColor(renderer.material.color);
 
             ballSFX.clip = clipList[2];
             ballSFX.Play();
