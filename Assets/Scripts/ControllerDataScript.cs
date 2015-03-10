@@ -18,12 +18,11 @@ public class ControllerDataScript : MonoBehaviour
     public ControllerInfo[] controllers;
     [HideInInspector]
     public const int MAX_CONTROLLERS = 4;
+    [HideInInspector]
     public bool teams = false;
 
     void Awake()
     {
-        DontDestroyOnLoad(this);
-
         controllers = new ControllerInfo[MAX_CONTROLLERS];
         colors = new Color[4];
         colors = new Color[] { Color.red, Color.blue, Color.green, Color.yellow };

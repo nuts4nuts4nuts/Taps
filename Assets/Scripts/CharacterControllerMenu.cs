@@ -6,12 +6,11 @@ using InControl;
 public class CharacterControllerMenu : Menu
 {
     public List<GameObject> startSpheres;
-    public ControllerDataScript controllerData;
+    public StartScreenManager manager;
 
     public override void Work()
     {
         int numDevices = InputManager.Devices.Count;
-        bool play = false;
 
         for(int i = 0; i < numDevices; ++i)
         {
@@ -23,10 +22,6 @@ public class CharacterControllerMenu : Menu
                 controllerData.Add(device);
                 index = controllerData.Contains(device);
                 controllerData.controllers[index].ready = true;
-            }
-            else if(device.Action4.WasPressed)
-            {
-                play = true;
             }
 
             if(device.Action2.WasPressed)
@@ -78,11 +73,6 @@ public class CharacterControllerMenu : Menu
             {
                 startSpheres[i].renderer.material.color = controllerData.controllers[i].color;
             }
-        }
-
-        if(play && controllerData.ReadyCount() == controllerData.Count() && controllerData.ReadyCount() > 0)
-        {
-            Application.LoadLevel("Game2");
         }
     }
 }

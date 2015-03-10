@@ -42,6 +42,23 @@ public class GameManager : MonoBehaviour
         CreatePlayers();
     }
 
+    void LateUpdate()
+    {
+        //Check Death
+        int numLiving = 0;
+        foreach(CharacterControllerScript c in chars)
+        {
+            if(c != null)
+            {
+                numLiving++;
+            }
+        }
+
+        if(numLiving < 2)
+        {
+            Invoke("Restart", 2.5f);
+        }
+    }
     private void CreatePlayers()
     {
         int movementIter = 0;
@@ -119,5 +136,10 @@ public class GameManager : MonoBehaviour
     public void UpdateBallText(string newText)
     {
         ballText.text = newText;
+    }
+
+    void Restart()
+    {
+        Application.LoadLevel("ControllerScreen");
     }
 }

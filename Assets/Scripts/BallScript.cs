@@ -124,6 +124,11 @@ public class BallScript : MonoBehaviour
             ballSFX.Play();
             GameManager.instance.UpdateBallText(numBounces.ToString());
 
+            if(numBounces % 5 == 0)
+            {
+                UpdateSpeed();
+            }
+
             ExplodeParticles();
         }
     }

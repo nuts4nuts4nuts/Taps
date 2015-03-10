@@ -30,7 +30,8 @@ public class CharacterControllerScript : MonoBehaviour
     public BallScript ball;
     public float throwStrength = 10.0f;
 
-    private int health = 100;
+    [HideInInspector]
+    public int health = 100;
     public Players me = Players.Invalid;
     [HideInInspector]
     public int physLayer = 0;
