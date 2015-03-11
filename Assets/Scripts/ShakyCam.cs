@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 //Camera shake cred: http://www.mikedoesweb.com/2012/camera-shake-in-unity
 

@@ -224,9 +224,10 @@ public class CharacterControllerScript : MonoBehaviour
         if (health <= 0)
         {
             damageHelper.PlaySound();
-            damageHelper.BurstParticles((int)DamageHelper.ParticleAmount.death, color, particlePos);
-            cam.Shake(0.001f * 100, 0.00001f * 100);
-            cam.Sleep(0.1f, 0.5f);
+            damageHelper.BurstParticles((int)DamageHelper.ParticleAmount.death - health, color, particlePos);
+            Mathf.Clamp(health, -50, 0);
+            cam.Shake(0.001f * (100 - health), 0.00001f * (100 - health));
+            cam.Sleep(0.1f, 0.1f * -health);
             Destroy(gameObject);
         }
         else
@@ -256,7 +257,7 @@ public class CharacterControllerScript : MonoBehaviour
     {
         BallScript bs = collision.gameObject.GetComponent<BallScript>();
 
-        if(bs && ball)
+        if(bs && ball && ball.numBounces != 0)
         {
             TakeDamage(ball.numBounces);
         }
