@@ -46,15 +46,28 @@ public class GameManager : MonoBehaviour
     {
         //Check Death
         int numLiving = 0;
+        bool teamAlive = true;
+        Color currentColor = Color.black; //Just doing it by color for now cuz YOLO
+
         foreach(CharacterControllerScript c in chars)
         {
             if(c != null)
             {
                 numLiving++;
+
+                if(currentColor != Color.black && currentColor != c.color)
+                {
+                    teamAlive = false;
+                }
+                else
+                {
+                    currentColor = c.color;
+                }
             }
+            
         }
 
-        if(numLiving < 2)
+        if(numLiving < 2 || teamAlive)
         {
             Invoke("Restart", 2.5f);
         }
