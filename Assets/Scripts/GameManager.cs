@@ -72,6 +72,7 @@ public class GameManager : MonoBehaviour
             Invoke("Restart", 2.5f);
         }
     }
+
     private void CreatePlayers()
     {
         int movementIter = 0;
@@ -154,5 +155,20 @@ public class GameManager : MonoBehaviour
     void Restart()
     {
         Application.LoadLevel("ControllerScreen");
+    }
+
+    public List<CharacterControllerScript> GetLivingChars()
+    {
+        List<CharacterControllerScript> livingChars = new List<CharacterControllerScript>();
+
+        foreach(CharacterControllerScript c in chars)
+        {
+            if(c)
+            {
+                livingChars.Add(c);
+            }
+        }
+
+        return livingChars;
     }
 }

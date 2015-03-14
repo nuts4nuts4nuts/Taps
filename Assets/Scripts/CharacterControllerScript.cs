@@ -225,7 +225,7 @@ public class CharacterControllerScript : MonoBehaviour
         {
             damageHelper.PlaySound();
             damageHelper.BurstParticles((int)DamageHelper.ParticleAmount.death - health, color, particlePos);
-            Mathf.Clamp(health, -50, 0);
+            health = Mathf.Clamp(health, -50, 0);
             cam.Shake(0.001f * (100 - health), 0.00001f * (100 - health));
             cam.Sleep(0.1f, 0.1f * -health);
             Destroy(gameObject);

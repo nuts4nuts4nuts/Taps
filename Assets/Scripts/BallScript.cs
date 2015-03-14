@@ -145,6 +145,12 @@ public class BallScript : MonoBehaviour
         GameManager.instance.UpdateBallText(numBounces.ToString());
         EnableAllPhysics();
 
+        //Hard reset ball references
+        foreach(CharacterControllerScript c in GameManager.instance.GetLivingChars())
+        {
+            c.ball = null;
+        }
+
         rigidbody2D.gravityScale = 0.0f;
         collider2D.enabled = false;
         currentSpeed = startSpeed;
