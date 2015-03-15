@@ -11,6 +11,8 @@ public class ShakyCam : MonoBehaviour
     private float shake_decay;
     private float shake_intensity;
 
+    private bool shaking = false;
+
     void Update()
     {
         if (shake_intensity > 0)
@@ -23,14 +25,27 @@ public class ShakyCam : MonoBehaviour
             originRotation.w + Random.Range(-shake_intensity, shake_intensity) * 0.2f);
             shake_intensity -= shake_decay;
         }
+
+        if (shake_intensity <= 0 && shaking)
+        {
+            transform.position = originPosition;
+            transform.rotation = originRotation;
+            shaking = false;
+        }
     }
 
     public void Shake(float intensity, float decay)
     {
-        originPosition = transform.position;
-        originRotation = transform.rotation;
-        shake_intensity = intensity;
-        shake_decay = decay;
+        if(!shaking)
+        {
+            //do it
+            originPosition = transform.position;
+            originRotation = transform.rotation;
+            shake_intensity = intensity;
+            shake_decay = decay;
+
+            shaking = true;
+        }
     }
 
     public void Sleep(float newScale, float resetTime)

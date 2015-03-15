@@ -124,7 +124,6 @@ public class CharacterControllerScript : MonoBehaviour
                     ball.rigidbody2D.velocity = new Vector2(x * throwStrength * ball.chargeFactor, y * throwStrength * ball.chargeFactor);
                     ball.collider2D.enabled = true;
                     ball.chargeFactor = 1;
-                    ball.UpdateSpeed();
                     characterSFX.clip = clipList[1];
                     characterSFX.Play();
                 }
@@ -136,7 +135,7 @@ public class CharacterControllerScript : MonoBehaviour
 
                 if (grounded)
                 {
-                    TakeDamage(ball.numBounces);
+                    TakeDamage(ball);
                 }
             }
         }
@@ -174,8 +173,9 @@ public class CharacterControllerScript : MonoBehaviour
                 ball.rigidbody2D.velocity = Vector2.zero;
                 ball.collider2D.enabled = false;
 
-                ball.IgnorePhysics(friends[0]);
                 ball.SetParticleColor(color);
+                ball.UpdateSpeed();
+                ball.IgnorePhysics(friends[0]);
 
                 if(friends.Length > 1)
                 {
@@ -209,13 +209,14 @@ public class CharacterControllerScript : MonoBehaviour
         GameManager.instance.UpdateCharText(this, health.ToString());
     }
 
-    void TakeDamage(int damage)
+    void TakeDamage(BallScript bs)
     {
+        int damage = bs.numBounces;
         characterSFX.clip = clipList[2];
         characterSFX.Play();
         UpdateHealth(health - damage);
-        ball.ExplodeParticles();
-        ball.Reset();
+        bs.ExplodeParticles();
+        bs.Reset();
         ball = null;
 
         Vector2 particlePos = transform.position;
@@ -226,14 +227,14 @@ public class CharacterControllerScript : MonoBehaviour
             damageHelper.PlaySound();
             damageHelper.BurstParticles((int)DamageHelper.ParticleAmount.death - health, color, particlePos);
             health = Mathf.Clamp(health, -50, 0);
-            cam.Shake(0.001f * (100 - health), 0.00001f * (100 - health));
+            cam.Shake(0.002f * (100 - health), 0.00001f * (100 - health));
             cam.Sleep(0.1f, 0.1f * -health);
             Destroy(gameObject);
         }
         else
         {
             damageHelper.BurstParticles(damage * 5, color, particlePos);
-            cam.Shake(0.001f * damage, 0.00003f * damage);
+            cam.Shake(0.002f * damage, 0.00003f * damage);
             cam.Sleep(0.01f, 0.002f * damage);
         }
     }
@@ -257,9 +258,9 @@ public class CharacterControllerScript : MonoBehaviour
     {
         BallScript bs = collision.gameObject.GetComponent<BallScript>();
 
-        if(bs && ball && ball.numBounces != 0)
+        if(bs && bs.numBounces != 0)
         {
-            TakeDamage(ball.numBounces);
+            TakeDamage(bs);
         }
     }
 

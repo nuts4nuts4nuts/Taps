@@ -41,6 +41,8 @@ public class BallScript : MonoBehaviour
     public Color orbitParticleColor;
     public AnimationCurve colorCurve;
 
+    private ShakyCam cam;
+
     void Awake()
     {
         pSystems = GetComponentsInChildren<ParticleSystem>();
@@ -51,6 +53,7 @@ public class BallScript : MonoBehaviour
         }
 
         ballSFX = GetComponent<AudioSource>();
+        cam = Camera.main.GetComponent<ShakyCam>();
     }
 
     void Start()
@@ -130,6 +133,8 @@ public class BallScript : MonoBehaviour
             }
 
             ExplodeParticles();
+
+            cam.Shake(0.0001f * numBounces, 0.00003f * numBounces);
         }
     }
 
