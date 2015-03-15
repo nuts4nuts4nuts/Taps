@@ -19,7 +19,6 @@ public class BallScript : MonoBehaviour
     public float chargeFactor = 1;
     [HideInInspector]
     public int physicsIgnoreLayer = 31;
-    public float throwStrength = 10.0f;
 
     private AudioSource ballSFX;
     public List<AudioClip> clipList;
