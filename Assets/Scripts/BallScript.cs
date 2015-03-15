@@ -70,10 +70,17 @@ public class BallScript : MonoBehaviour
 
     void Update()
     {
-        int trailParticleNum = (int)rigidbody2D.velocity.magnitude * trailParticleCoefficient;
-        int orbitParticleNum = (int)rigidbody2D.velocity.magnitude * orbitParticleCoefficient;
+        int trailParticleNum = numBounces * trailParticleCoefficient;
+        int orbitParticleNum = numBounces * orbitParticleCoefficient;
+        if(HowManyCantIKill() == 0)
+        {
+            trailParticleNum *= 10;
+            orbitParticleNum *= 10;
+        }
+
         pSystems[0].emissionRate = trailParticleNum;
         pSystems[1].emissionRate = orbitParticleNum;
+
 
         //Color
         ParticleSystem.Particle[] pList = new ParticleSystem.Particle[pSystems[0].particleCount];
@@ -133,7 +140,7 @@ public class BallScript : MonoBehaviour
 
             ExplodeParticles();
 
-            cam.Shake(0.0001f * numBounces, 0.00003f * numBounces);
+            cam.Shake(0.0005f * numBounces, 0.00009f * numBounces);
         }
     }
 
@@ -243,5 +250,21 @@ public class BallScript : MonoBehaviour
         {
             currentSpeed = maxSpeed;
         }
+    }
+
+    public int HowManyCantIKill()
+    {
+        List<CharacterControllerScript> cList = GameManager.instance.GetLivingChars();
+        int count = cList.Count;
+
+        foreach(CharacterControllerScript c in cList)
+        {
+            if(numBounces >= c.health)
+            {
+                count--;
+            }
+        }
+
+        return count;
     }
 }

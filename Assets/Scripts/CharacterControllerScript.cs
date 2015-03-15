@@ -235,7 +235,7 @@ public class CharacterControllerScript : MonoBehaviour
         {
             damageHelper.BurstParticles(damage * 5, color, particlePos);
             cam.Shake(0.002f * damage, 0.00003f * damage);
-            cam.Sleep(0.01f, 0.002f * damage);
+            cam.Sleep(0.01f, 0.004f * damage);
         }
     }
 

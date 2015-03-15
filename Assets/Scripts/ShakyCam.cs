@@ -38,14 +38,14 @@ public class ShakyCam : MonoBehaviour
     {
         if(!shaking)
         {
-            //do it
+            //Reset Origin
             originPosition = transform.position;
             originRotation = transform.rotation;
+        }
             shake_intensity = intensity;
             shake_decay = decay;
 
             shaking = true;
-        }
     }
 
     public void Sleep(float newScale, float resetTime)
