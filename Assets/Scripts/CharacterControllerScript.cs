@@ -124,7 +124,6 @@ public class CharacterControllerScript : MonoBehaviour
                     ball.rigidbody2D.velocity = new Vector2(x * throwStrength * ball.chargeFactor, y * throwStrength * ball.chargeFactor);
                     ball.collider2D.enabled = true;
                     ball.chargeFactor = 1;
-                    ball.UpdateSpeed();
                     characterSFX.clip = clipList[1];
                     characterSFX.Play();
                 }
@@ -136,7 +135,11 @@ public class CharacterControllerScript : MonoBehaviour
 
                 if (grounded)
                 {
-                    TakeDamage(ball.numBounces);
+                    ball.transform.parent = null;
+                    ball.rigidbody2D.velocity = new Vector2(0, throwStrength);
+                    ball.collider2D.enabled = true;
+                    characterSFX.clip = clipList[1];
+                    characterSFX.Play();
                 }
             }
         }
@@ -185,6 +188,7 @@ public class CharacterControllerScript : MonoBehaviour
                     }
                 }
 
+                ball.UpdateSpeed();
                 characterSFX.clip = clipList[0];
                 characterSFX.Play();
 
