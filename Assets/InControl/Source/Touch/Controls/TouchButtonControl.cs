@@ -1,9 +1,8 @@
-using System;
-using UnityEngine;
-
-
 namespace InControl
 {
+	using UnityEngine;
+
+
 	public class TouchButtonControl : TouchControl
 	{
 		[Header( "Position" )]
@@ -26,6 +25,10 @@ namespace InControl
 		public ButtonTarget target = ButtonTarget.Action1;
 		public bool allowSlideToggle = true;
 		public bool toggleOnLeave = false;
+
+#if !(UNITY_4_3 || UNITY_4_5 || UNITY_4_6 || UNITY_4_7 || UNITY_5_0 || UNITY_5_1 || UNITY_5_2)
+		public bool pressureSensitive = false;
+#endif
 
 
 		[Header( "Sprites" )]
@@ -83,19 +86,53 @@ namespace InControl
 		}
 
 
-		public override void SubmitControlState( ulong updateTick )
+		public override void SubmitControlState( ulong updateTick, float deltaTime )
 		{
+#if !(UNITY_4_3 || UNITY_4_5 || UNITY_4_6 || UNITY_4_7 || UNITY_5_0 || UNITY_5_1 || UNITY_5_2)
+			if (pressureSensitive)
+			{
+				var buttonValue = 0.0f;
+				if (currentTouch == null)
+				{
+					if (allowSlideToggle)
+					{
+						var touchCount = TouchManager.TouchCount;
+						for (var i = 0; i < touchCount; i++)
+						{
+							var touch = TouchManager.GetTouch( i );
+							if (button.Contains( touch ))
+							{
+								buttonValue = Utility.Max( buttonValue, touch.normalizedPressure );
+							}
+						}
+					}
+				}
+				else
+				{
+					buttonValue = currentTouch.normalizedPressure;
+				}
+				ButtonState = buttonValue > 0.0f;
+				SubmitButtonValue( target, buttonValue, updateTick, deltaTime );
+				return;
+			}
+#endif
+
 			if (currentTouch == null && allowSlideToggle)
 			{
 				ButtonState = false;
 				var touchCount = TouchManager.TouchCount;
-				for (int i = 0; i < touchCount; i++)
+				for (var i = 0; i < touchCount; i++)
 				{
 					ButtonState = ButtonState || button.Contains( TouchManager.GetTouch( i ) );
 				}
 			}
+			SubmitButtonState( target, ButtonState, updateTick, deltaTime );
+		}
 
-			SubmitButtonState( target, ButtonState, updateTick );
+
+		public override void CommitControlState( ulong updateTick, float deltaTime )
+		{
+			CommitButton( target );
 		}
 
 
@@ -177,7 +214,7 @@ namespace InControl
 
 
 		public TouchControlAnchor Anchor
-		{ 
+		{
 			get
 			{
 				return anchor;
@@ -195,7 +232,7 @@ namespace InControl
 
 
 		public Vector2 Offset
-		{ 
+		{
 			get
 			{
 				return offset;
@@ -213,7 +250,7 @@ namespace InControl
 
 
 		public TouchUnitType OffsetUnitType
-		{ 
+		{
 			get
 			{
 				return offsetUnitType;
