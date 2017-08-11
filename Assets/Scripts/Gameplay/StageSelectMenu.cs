@@ -21,9 +21,15 @@ public class StageSelectMenu : Menu
 
             if(controllerInfo.device != null)
             {
-                if (controllerInfo.device.MenuWasPressed)
+                if (controllerInfo.device.CommandWasPressed)
                 {
-                    Application.LoadLevel(currentLevel);
+                    controllerData.scoreMode = false;
+                    Application.LoadLevel( currentLevel );
+                }
+                else if (controllerInfo.device.Action4)
+                {
+                    controllerData.scoreMode = true;
+                    Application.LoadLevel( currentLevel );
                 }
 
                 float x = controllerInfo.device.LeftStickX;

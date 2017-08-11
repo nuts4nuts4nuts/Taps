@@ -21,6 +21,9 @@ public class ControllerDataScript : MonoBehaviour
     [HideInInspector]
     public bool teams = false;
 
+    //Part of this moving to being a general between-scene metadata holder
+    public bool scoreMode;
+
     void Awake()
     {
         controllers = new ControllerInfo[MAX_CONTROLLERS];

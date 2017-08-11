@@ -34,9 +34,13 @@ public class GameManager : MonoBehaviour
 
     private ControllerDataScript controllerData;
 
+    //Is the game mode old school death match (false) or score (true). Should be refactored into proper states with more game modes.
+    private bool scoreMode;
+
     void Awake()
     {
         controllerData = (ControllerDataScript)FindObjectOfType(typeof(ControllerDataScript));
+        scoreMode = controllerData.scoreMode;
         chars = new CharacterControllerScript[ControllerDataScript.MAX_CONTROLLERS];
         charText = new Text[ControllerDataScript.MAX_CONTROLLERS];
         CreatePlayers();
